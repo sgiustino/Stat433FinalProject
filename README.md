@@ -45,17 +45,29 @@ ratio variables (i.e. `bingRatio`) as the independent variables in our
 study to analyze emotionally-laden words in correlation with retweet
 behavior (i.e. `retweet_count`). We did this because we wanted to
 measure emotional saturation of a tweet rather than the number of
-emotionally-laden words (i.e
-`bingWords') within the tweet in order to support the ranging lengths of the tweets. Additionally, we chose to focus on all the emotional words instead of either positive or negative because all dictionary words carry emotional significance, which answers the question of our study.  Next, in order to ensure all dictionaries (Bing, Lough, and NRC) were significantly correlated to the amount of retweets per tweet, we constructed three separate linear regression models along with anova tables. These tables proved to us that all three dictionary ratios had a statistically significant effect of retweet count. However, in order for these tables to portray statistically significant p values for the ratios we used the log value of`retweet_count\`.
-In doing so, the graphs produced became more concise and the linear
-lines more dramatic. Lastly, we used the following equation to interpret
-the three dictionaries’ coefficients, within the anova tables: ln(Yi) =
-𝜷0 + 𝜷1Xi + ui. While the equation originally interprets the
-relationship as a correlation between a tweet with zero
-emotionally-laden words in comparison to one with 100% emotionally-laden
-words, we decided to interpret these results with 10% increases. We did
-this in hopes to clarify the results in a real-world sense as there are
-rarely tweets that are completely made of emotional words.
+emotionally-laden words (i.e `bingWords`) within the tweet in order to
+support the ranging lengths of the tweets. Additionally, we chose to
+focus on all the emotional words instead of either positive or negative
+because all dictionary words carry emotional significance, which answers
+the question of our study.
+
+Next, in order to ensure all dictionaries (Bing, Lough, and NRC) were
+significantly correlated to the amount of retweets per tweet, we
+constructed three separate linear regression models along with anova
+tables. These tables proved to us that all three dictionary ratios had a
+statistically significant effect of retweet count. However, in order for
+these tables to portray statistically significant p values for the
+ratios we used the log value of `retweet_count`. In doing so, the graphs
+produced became more concise and the linear lines more dramatic.
+
+Lastly, we used the following equation to interpret the three
+dictionaries’ coefficients, within the anova tables: ln(Yi) = 𝜷0 +
+𝜷1Xi + ui. While the equation originally interprets the relationship as
+a correlation between a tweet with zero emotionally-laden words in
+comparison to one with 100% emotionally-laden words, we decided to
+interpret these results with 10% increases. We did this in hopes to
+clarify the results in a real-world sense as there are rarely tweets
+that are completely made of emotional words.
 
 ## Results
 
