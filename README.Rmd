@@ -1,0 +1,244 @@
+---
+title: "Final Project: The Effect of Emotion on Reactions to Greta Thunberg’s Tweets"
+author: "Lily Franks, Sophia Giustino, Emma Kim, and Rob Dreyer"
+date: '2022-12-18'
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(tidyverse)
+library(tidytext)
+library(Matrix)
+library(rARPACK)
+library(glmnet)
+library(randomForest)
+library(textdata)
+library(rtweet)
+library(dplyr)
+```
+
+
+## Introduction
+
+Greta Thunberg is a Swedish environmental activist who is known for her work that addresses the issue of climate change. She has challenged world leaders to take immediate action against climate change and has even spoken at the United Nations Climate Action Summit in 2019. Greta joined the spotlight at the age of 18, and her Twitter account shortly followed. Today, she has over 4.9 million followers and more than 11.7 thousand tweets that discuss climate change and environmental activism. 
+
+With the impending threats of climate change over the past half-decade, and the prevalence of social media today, we thought it would be interesting to investigate how social media synchronizes with current events; more specifically, how the use of social media could affect responses to climate change. We decided to do an in-depth analysis of Greta’s tweets to see if we could find any connections between the word choice in her tweets to the interactions with the tweet. We determined how the sentiment of social media posts about climate change influences engagement, which could lead to more actions being taken to stop climate change. We have found that Greta Thunberg’s tweets that have a higher ratio of emotionally-laden words to total words will receive greater interaction, measured by the number of retweets. 
+
+## Data
+
+your primary data sources–url links, citations, AND data descriptions (some people re-post data that others collect… be sure to give proper credit to the workers/org that originally collected the data);
+your data cleaning–describe the steps that you took. As much as possible, it should be replicable via your .Rmd file but not visible in the .pdf (echo = FALSE)
+
+```{r, echo = F}
+## This is how we pulled the tweets from Twitter, but we only did this once since it automatically pulls the most recent tweets and we wanted to get consistent results.
+
+#library(rtweet)
+#tweets = get_timeline(user = "GretaThunberg", n = Inf)
+#write.table(tweets, file = "/Users/sophiagiustino/Documents/Fall2022/Stat433/Project/greta_tweets.csv")
+#tweets_cut = tweets %>% 
+    #select(created_at, id, full_text, truncated, id_str, display_text_range,        #is_quote_status, retweet_count, favorite_count, favorited, retweeted, lang,     #text) 
+#write_csv(tweets_cut, file = "/Users/sophiagiustino/Documents/Fall2022/Stat433/Project/greta_tweets.csv")
+```
+
+
+```{r import data, echo = F, include=F}
+#setwd("/Users/sophiagiustino/Documents/Fall2022/Stat433/Project")
+greta_tweets = read.csv("greta_tweets.csv")
+
+text_df <- tibble(tweet = 1:nrow(greta_tweets), text = greta_tweets$full_text)
+
+extra_text_df <- tibble(tweet = 1:nrow(greta_tweets), text = greta_tweets$full_text, retweets = greta_tweets$retweet_count, favorites = greta_tweets$favorite_count)
+
+tweet1 = greta_tweets$full_text[1]
+```
+
+```{r data processing, echo = F, include=F}
+# this does a lot of processing! 
+
+tt  = text_df %>% 
+  unnest_tokens(word, text) %>% 
+  group_by(tweet) 
+
+tt2  = text_df %>% 
+  unnest_tokens(word, text) %>% 
+  group_by(tweet) %>%
+  summarise(word_count = n())
+
+```
+
+
+```{r bing sentiment, echo = F, include=F}
+bing = get_sentiments("bing") %>% 
+  mutate(neg= sentiment == "negative", 
+         pos = sentiment =="positive")
+
+bingFeat = tt %>% 
+  left_join(bing) %>% 
+  group_by(tweet) %>%
+  summarize(bingNeg = sum(neg, na.rm = T),
+            bingPos = sum(pos, na.rm = T),
+            bingWords = bingNeg + bingPos,
+            #bingRatio = bingWords/(tt$count),
+            bing = (bingPos + .00000001)/(n()+.00000002))
+```
+
+```{r lough sentiment, echo = F, include=F}
+lough = get_sentiments("loughran") %>% 
+  rename(lough = sentiment)
+
+lough = lough %>% 
+  mutate(value = 1) %>% 
+  pivot_wider(word, names_from = lough)
+
+
+loughFeat = tt %>% 
+  left_join(lough) %>% 
+  group_by(tweet) %>% 
+  summarize(  
+    loughNeg = sum(negative, na.rm=T),
+    loughPos = sum(positive, na.rm=T),
+    loughWords = loughNeg + loughPos,
+    #loughRatio = loughWords / count,
+    lough = (loughPos + .00000001)/(n()+.00000002))
+```
+
+```{r nrc sentiment, echo = F, include=F}
+nrc = get_sentiments("nrc") %>% 
+  rename(nrc = sentiment)
+
+nrcWide = nrc %>% 
+  mutate(value = 1) %>% 
+  pivot_wider(word, names_from = nrc, values_fill = 0)
+
+nrcFeat = tt %>% 
+  left_join(nrcWide) %>% 
+  group_by(tweet) %>% 
+  summarize(
+    nrcNeg = sum(negative, na.rm=T),
+    nrcPos = sum(positive, na.rm=T),
+    nrcWords = nrcNeg + nrcPos,
+    #nrcRatio = nrcWords / count,
+    nrc = (nrcPos + .00000001)/(n()+.00000002)) 
+```
+
+
+```{r joining, echo = F, include=F}
+xsent = tt2 %>%
+  group_by(tweet) %>%
+  left_join(bingFeat) %>% 
+  left_join(loughFeat) %>% 
+  left_join(nrcFeat) 
+xsent[is.na(xsent)] = 0
+```
+
+
+```{r order check, echo = F, include=F}
+#make sure rows are in order: 
+mean(xsent$tweet == 1:nrow(xsent))
+```
+
+________________________
+
+
+```{r create gret_sent, echo = F, include=F}
+# THIS JOINS GRETATWEETS AND XSENT = GRET_SENT
+gret_sent <- cbind(tweet = 1:nrow(greta_tweets), greta_tweets)
+```
+
+```{r clean up gret_sent, echo = F, include=F}
+gret_sent = gret_sent %>%
+  select(tweet, full_text, retweet_count, favorite_count, lang) %>%
+  left_join(xsent) %>%
+  mutate(bingRatio = bingWords/word_count, loughRatio = loughWords/word_count, nrcRatio = nrcWords/word_count) %>%
+  filter(lang == "en") #just english!
+
+gret_sent[is.na(gret_sent)] = 0
+#write.csv(gret_sent, "/Users/sophiagiustino/Documents/Fall2022/Stat433/Project/gret_sent.csv", row.names = T)
+```
+
+## Methods
+
+The third section of your document is the methods section. It should describe a brief description of the statistical technique(s) and a description of why you chose them.
+
+## Results
+
+We plotted the linear relationships between the emotional saturation of tweets and the logarithm of their retweet count. All of the graphs show a slight positive slope for the linear trend.
+
+#### NRC Ratio vs. Retweet Count
+```{r nrc graph, echo = F}
+ggplot(gret_sent, aes(nrcRatio, log(retweet_count))) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  xlab("Ratio Measure (NRC Words: Total Tweet Words)") +
+  ylab("Retweet Count (Log)") +
+  ggtitle("How NRC Dict. Words Affect Retweet Count")
+```
+
+```{r nrc reg, echo = F}
+summary(lm(log(retweet_count) ~ nrcRatio, gret_sent))
+```
+When we regressed the logarithm of retweets on the ratio of NRC dictionary emotional words to total words in the tweet, we found the coefficient for the ratio of emotional words was statistically significant, with a coefficient of 1.19. This means that for a 10% increase in emotional words (an increase of 0.1 in the ratio), there is an 11.9% increase in retweets. 
+
+
+#### Lough Ratio vs. Retweet Count
+```{r lough graph, echo = F}
+ggplot(gret_sent, aes(loughRatio, log(retweet_count))) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  xlab("Ratio Measure (Lough Words: Total Tweet Words)") +
+  ylab("Retweet Count (Log)") +
+  ggtitle("How Lough Dict. Words Affect Retweet Count")
+```
+
+```{r lough reg, echo = F}
+summary(lm(log(retweet_count) ~ loughRatio, gret_sent))
+```
+When we regressed the logarithm of retweets on the ratio of NRC dictionary emotional words to total words in the tweet, we found the coefficient for the ratio of emotional words was also statistically significant, with a coefficient of 3.39. This means that for a 10% increase in emotional words (an increase of 0.1 in the ratio), there is an 33.9% increase in retweets.
+
+
+#### Bing Ratio vs. Retweet Count
+```{r bing graph, echo = F}
+ggplot(gret_sent, aes(bingRatio, log(retweet_count))) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  xlab("Ratio Measure (Bing Words: Total Tweet Words)") +
+  ylab("Retweet Count (Log)") +
+  ggtitle("How Bing Dict. Words Affect Retweet Count")
+```
+
+```{r bing reg, echo = F}
+summary(lm(log(retweet_count) ~ bingRatio, gret_sent))
+```
+
+When we regressed the logarithm of retweets on the ratio of bing dictionary emotional words to total words in the tweet, we found the coefficient for the ratio of emotional words was also statistically significant, with a coefficient of 2.97. This means that for a 10% increase in emotional words (an increase of 0.1 in the ratio), there is an 29.7% increase in retweets.
+
+#### Compared: all dictionaries
+```{r combined plot, echo = F}
+ggplot(gret_sent) +
+  geom_smooth(aes(bingRatio, log(retweet_count), color = "red"), method = "lm", se=FALSE) +
+  geom_smooth(aes(loughRatio, log(retweet_count), color = "green"), method = "lm", se=FALSE) +
+  geom_smooth(aes(nrcRatio, log(retweet_count), color = "blue"), method = "lm", se=FALSE) +
+  xlab("Ratio Measure (Dictionary Words: Total Tweet Words)") +
+  ylab("Retweet Count (Log)") +
+  ggtitle("How Emotionally Laden Words Affect Retweet Count") + 
+  scale_color_discrete(name = "Dictionary", labels = c("Bing", "Lough", "Nrc"))
+  
+```
+
+Across all three dictionaries, we saw a statistically significant positive relationship between the ratio of emotional words to total words in the tweet and the number of retweets the tweet received. While the coefficients were different, we still have statistically significant evidence that an increase in the ratio of emotionally laden words is related to an increase in a tweet’s retweet count. 
+
+
+```{r avg words per tweet}
+measure_dic = data.frame(
+  dictionary = c("Bing", "Lough", "Nrc"),
+  avgval = c(mean(gret_sent$bingWords), mean(gret_sent$loughWords), mean(gret_sent$nrcWords))
+)
+
+measure_dic 
+```
+
+## Conclusion
+
+The final section of the paper is the conclusion. It should return to your thesis statement/hypothesis. Summarize the main evidence that supports your conclusions; reference back to key figures/tables/equations and highlight the important pieces. Describe the limitations of your analysis, both big and small. Describe issues that remain uncertain, but could be explored more fully with your available resources (+ more time). 
