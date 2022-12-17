@@ -8,7 +8,7 @@
 
 library(shiny)
 library(ggplot2)
-gret_sent <- read.csv("/Users/sophiagiustino/Documents/Fall2022/Stat433/Project/shiny/lily_app/gret_sent.csv")
+gret_sent <- read.csv("gret_sent.csv")
 
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
@@ -43,8 +43,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
-  #gret_sent = read.csv("/Users/lilyfranks/Desktop/SCHOOL/STAT 433/FINAL PROJECT/data/gret_sent.csv")
-
+  
   output$scatter <- renderPlot({
     
     #gret_sent <- read.csv("gret_sent.csv")
