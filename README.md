@@ -180,20 +180,6 @@ the coefficients were different, we still have statistically significant
 evidence that an increase in the ratio of emotionally laden words is
 related to an increase in a tweet’s retweet count.
 
-``` r
-measure_dic = data.frame(
-  dictionary = c("Bing", "Lough", "Nrc"),
-  avgval = c(mean(gret_sent$bingWords), mean(gret_sent$loughWords), mean(gret_sent$nrcWords))
-)
-
-measure_dic 
-```
-
-    ##   dictionary    avgval
-    ## 1       Bing 1.2960199
-    ## 2      Lough 0.6453447
-    ## 3        Nrc 1.8137882
-
 ## Conclusion
 
 After our analysis, we concluded that Greta Thunberg’s tweets that have

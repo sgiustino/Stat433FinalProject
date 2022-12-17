@@ -235,15 +235,6 @@ ggplot(gret_sent) +
 Across all three dictionaries, we saw a statistically significant positive relationship between the ratio of emotional words to total words in the tweet and the number of retweets the tweet received. While the coefficients were different, we still have statistically significant evidence that an increase in the ratio of emotionally laden words is related to an increase in a tweet’s retweet count. 
 
 
-```{r avg words per tweet}
-measure_dic = data.frame(
-  dictionary = c("Bing", "Lough", "Nrc"),
-  avgval = c(mean(gret_sent$bingWords), mean(gret_sent$loughWords), mean(gret_sent$nrcWords))
-)
-
-measure_dic 
-```
-
 ## Conclusion
 
 After our analysis, we concluded that Greta Thunberg’s tweets that have a higher ratio of emotionally-laden words to total words will receive greater interaction, measured by the number of retweets. Our main evidence to support this conclusion is that across all three dictionaries there is a statistically significant positive relationship between the word ratio and the logarithm of the retweet count. We can see all three of the positive linear relationships in Figure 4. In tables 1, 2, and 3, we can see that the positive coefficients are all statistically significant.
