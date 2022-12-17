@@ -19,6 +19,7 @@ library(rtweet)
 library(dplyr)
 ```
 
+Check out and download our full project on [Github](https://github.com/sgiustino/Stat433FinalProject).
 
 ## Introduction
 
@@ -168,7 +169,7 @@ Lastly, we used the following equation to interpret the three dictionaries’ co
 
 ## Results
 
-We plotted the linear relationships between the emotional saturation of tweets and the logarithm of their retweet count. All of the graphs show a slight positive slope for the linear trend.
+We plotted the linear relationships between the emotional saturation of tweets and the logarithm of their retweet count. All of the graphs show a slight positive slope for the linear trend. You can also view these plots in our [Shiny App.](https://github.com/sgiustino/Stat433FinalProject/blob/master/app.R)
 
 #### Figure 1: NRC Ratio vs. Retweet Count
 ```{r nrc graph, echo = F}

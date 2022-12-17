@@ -4,6 +4,9 @@ Tweets
 Lily Franks, Sophia Giustino, Emma Kim, and Rob Dreyer
 2022-12-18
 
+Check out and download our full project on
+[Github](https://github.com/sgiustino/Stat433FinalProject).
+
 ## Introduction
 
 Greta Thunberg is a Swedish environmental activist who is known for her
@@ -73,7 +76,9 @@ that are completely made of emotional words.
 
 We plotted the linear relationships between the emotional saturation of
 tweets and the logarithm of their retweet count. All of the graphs show
-a slight positive slope for the linear trend.
+a slight positive slope for the linear trend. You can also view these
+plots in our [Shiny
+App.](https://github.com/sgiustino/Stat433FinalProject/blob/master/app.R)
 
 #### Figure 1: NRC Ratio vs. Retweet Count
 
