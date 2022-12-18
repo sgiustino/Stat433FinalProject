@@ -29,8 +29,10 @@ With the impending threats of climate change over the past half-decade, and the 
 
 ## Data
 
-your primary data sources–url links, citations, AND data descriptions (some people re-post data that others collect… be sure to give proper credit to the workers/org that originally collected the data);
-your data cleaning–describe the steps that you took. As much as possible, it should be replicable via your .Rmd file but not visible in the .pdf (echo = FALSE)
+To collect data from Greta Thunberg’s twitter account, we used pulled data from the Twitter API with the package `rtweet`. Using the `get_timeline` function, we were able to pull approximately 3000 of Greta Thunberg’s most recent tweets and write them to a csv file. We then filtered the Twitter API data to include the full text, retweet count, favorited count, language, and word count. To determine the sentiment in each tweet, we used three word dictionaries known as Bing, Loughran, and NRC. Each dictionary classifies a word as either positive, negative, or neutral. Some dictionaries had other classifications, but for consistency purposes we only used the positive and negative variables.
+	
+Before we analyzed the sentiment of each tweet, we first filtered the data to only include tweets written in English. We then split each tweet to include one word per row using the `unnest_tokens` function. With the tweets separated by word, we created three new data frames by joining each of the sentiment dictionaries onto the individual words of each tweet. Every word that was matched to a sentiment dictionary added to the count of positive or negative words in the tweet. By taking the sum of positive and negative words (i.e. `bingPos`, `bingNeg`) in each tweet and dividing by the word count, we found the ratio of emotionally-laden words in each tweet (i.e. `bingRatio`). We then used a left join to combine the three sentiment data frames onto the original dataset, allowing us to compare the sentiment data to the twitter interactions data. To make sure all rows were in order, we used the function, `mean(xsent$tweet == 1:nrow(xsent))`, to double check our left joins. 
+
 
 ```{r, echo = F}
 ## This is how we pulled the tweets from Twitter, but we only did this once since it automatically pulls the most recent tweets and we wanted to get consistent results.
